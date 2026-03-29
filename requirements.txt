@@ -1,0 +1,26 @@
+# LuggageIQ — Competitive Intelligence Dashboard
+# Requirements
+
+# ── Core framework ────────────────────────────────────────────────────────────
+flask>=3.0.0
+gunicorn>=21.2.0          # For production deployment
+
+# ── Data processing ───────────────────────────────────────────────────────────
+pandas>=2.1.0
+numpy>=1.26.0
+
+# ── Visualization ─────────────────────────────────────────────────────────────
+plotly>=5.18.0
+
+# ── Sentiment analysis ────────────────────────────────────────────────────────
+vaderSentiment>=3.3.2     # Primary: lightweight, no model download
+# Optional HuggingFace upgrade (uncomment for transformer-based sentiment):
+# transformers>=4.36.0
+# torch>=2.1.0
+
+# ── Web scraping (optional) ──────────────────────────────────────────────────
+playwright>=1.40.0        # pip install playwright && playwright install chromium
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+requests>=2.31.0
