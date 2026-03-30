@@ -33,33 +33,66 @@ This project covers:
 
 ```mermaid
 flowchart TD
-    A[Data Source Layer] --> A1[Synthetic Generator]
-    A --> A2[Amazon Scraper Optional]
+    subgraph S1["📥 Data Ingestion"]
+        A1["🧪 Synthetic Generator"]
+        A2["🕸️ Amazon Scraper Optional"]
+        B["🗂️ Raw Dataset CSV"]
+        A1 --> B
+        A2 --> B
+    end
 
-    A1 --> B[Raw Dataset CSV]
-    A2 --> B
+    subgraph S2["🧠 Analysis Engine"]
+        C1["💬 Sentiment Analysis"]
+        C2["💸 Pricing Analysis"]
+        C3["🏁 Competitor Matrix"]
+        C4["💡 Insight Generator"]
+        D["📦 Processed Metrics"]
+        C1 --> D
+        C2 --> D
+        C3 --> D
+        C4 --> D
+    end
 
-    B --> C[Analysis Pipeline]
-    C --> C1[Sentiment Analysis]
-    C --> C2[Pricing Analysis]
-    C --> C3[Competitor Matrix]
-    C --> C4[Insight Generator]
+    subgraph S3["🌐 Serving Layer"]
+        E["⚙️ Flask API Layer"]
+        E1["📌 /api/overview"]
+        E2["📌 /api/brands"]
+        E3["📌 /api/chart/*"]
+        E4["📌 /api/insights"]
+        E --> E1
+        E --> E2
+        E --> E3
+        E --> E4
+    end
 
-    C1 --> D[Processed Metrics]
-    C2 --> D
-    C3 --> D
-    C4 --> D
+    subgraph S4["📊 Experience Layer"]
+        F["🖥️ Dashboard UI"]
+        F1["Overview"]
+        F2["Brand Drilldown"]
+        F3["Product Drilldown"]
+        F --> F1
+        F --> F2
+        F --> F3
+    end
 
-    D --> E[Flask API Layer]
-    E --> E1["/api/overview"]
-    E --> E2["/api/brands"]
-    E --> E3["/api/chart/*"]
-    E --> E4["/api/insights"]
+    B --> C1
+    B --> C2
+    B --> C3
+    B --> C4
+    D --> E
+    E --> F
 
-    E --> F[Dashboard UI]
-    F --> F1[Overview]
-    F --> F2[Brand Drilldown]
-    F --> F3[Product Drilldown]
+    classDef ingest fill:#1f3b73,stroke:#5da9ff,stroke-width:2px,color:#ffffff;
+    classDef analysis fill:#5c2a72,stroke:#d58bff,stroke-width:2px,color:#ffffff;
+    classDef serving fill:#0f5b52,stroke:#62e6d5,stroke-width:2px,color:#ffffff;
+    classDef ui fill:#7a4b12,stroke:#ffcb6b,stroke-width:2px,color:#ffffff;
+    classDef endpoint fill:#253238,stroke:#8ab4f8,stroke-width:1.5px,color:#dbeafe;
+
+    class A1,A2,B ingest;
+    class C1,C2,C3,C4,D analysis;
+    class E serving;
+    class F,F1,F2,F3 ui;
+    class E1,E2,E3,E4 endpoint;
 ```
 
 ---
