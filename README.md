@@ -14,8 +14,8 @@ This project covers:
 
 ## Demo Links 🔗
 
-- Live demo: Add your deployed URL here
-- Repository: Add your GitHub repository URL here
+- Live demo: https://luggageiq.vercel.app/ 
+- Video Url: https://drive.google.com/file/d/18i3tP4_jjhS4viy5LVNi5np3nog1rTBe/view?usp=sharing 
 
 ---
 
