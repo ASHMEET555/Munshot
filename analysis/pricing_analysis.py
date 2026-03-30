@@ -61,33 +61,61 @@ def brand_pricing_summary(df: pd.DataFrame) -> pd.DataFrame:
     return summary
 
 
-def compute_value_score(pricing_df: pd.DataFrame, sentiment_df: pd.DataFrame) -> pd.DataFrame:
+def compute_value_score(
+    pricing_df: pd.DataFrame,
+    sentiment_df: pd.DataFrame,
+    aspect_df: pd.DataFrame | None = None,
+) -> pd.DataFrame:
     """
-    Value-for-money score = sentiment_score / normalized_price.
-    Higher score = better value (good sentiment at lower price).
+    Value-for-money score using a weighted mix of brand quality + price fairness.
+    Higher score = better value.
     
     Args:
         pricing_df: brand-level pricing summary
         sentiment_df: brand-level sentiment summary
     Returns:
-        Merged DataFrame with value_score column
+        Merged DataFrame with value_score and value_score_pct columns
     """
     merged = pricing_df.merge(sentiment_df[["brand", "avg_sentiment"]], on="brand", how="left")
+
+    # Pull in durability signal if available (from aspect sentiment pipeline).
+    if aspect_df is not None and "durability" in aspect_df.columns:
+        merged = merged.merge(aspect_df[["brand", "durability"]], on="brand", how="left")
+    elif "durability" not in merged.columns:
+        merged["durability"] = merged["avg_sentiment"]
 
     # Normalize price (0=cheapest, 1=most expensive)
     min_p = merged["avg_price"].min()
     max_p = merged["avg_price"].max()
     merged["price_norm"] = (merged["avg_price"] - min_p) / (max_p - min_p + 1)
 
-    # Value = sentiment / (0.5 + price_norm)  — avoid div-by-zero
-    merged["value_score"] = (merged["avg_sentiment"] / (0.5 + merged["price_norm"])).round(3)
+    # Softer price penalty: 1 / (0.7 + sqrt(price_norm))
+    merged["soft_price_component"] = 1 / (0.7 + np.sqrt(merged["price_norm"].clip(lower=0)))
+    p_min = merged["soft_price_component"].min()
+    p_max = merged["soft_price_component"].max()
+    merged["price_score"] = (merged["soft_price_component"] - p_min) / (p_max - p_min + 1e-9)
 
-    # Normalize value_score to 0-100
-    vs_min = merged["value_score"].min()
-    vs_max = merged["value_score"].max()
-    merged["value_score_pct"] = (
-        (merged["value_score"] - vs_min) / (vs_max - vs_min + 0.001) * 100
-    ).round(1)
+    # Component scores normalized to 0-1.
+    merged["sentiment_score"] = merged["avg_sentiment"].clip(0, 1)
+    merged["rating_score"] = ((merged["avg_rating"] - 1) / 4).clip(0, 1)
+    merged["durability_score"] = merged["durability"].fillna(merged["sentiment_score"]).clip(0, 1)
+
+    # Weighted value mix: sentiment + rating + durability + price.
+    weights = {
+        "sentiment_score": 0.35,
+        "rating_score": 0.25,
+        "durability_score": 0.20,
+        "price_score": 0.20,
+    }
+    merged["value_score"] = (
+        merged["sentiment_score"] * weights["sentiment_score"]
+        + merged["rating_score"] * weights["rating_score"]
+        + merged["durability_score"] * weights["durability_score"]
+        + merged["price_score"] * weights["price_score"]
+    ).round(3)
+
+    # Percentile rank to 0-100 (more stable than strict min-max on small brand sets).
+    merged["value_score_pct"] = (merged["value_score"].rank(pct=True, method="average") * 100).round(1)
 
     return merged
 
@@ -126,12 +154,16 @@ def product_pricing_detail(df: pd.DataFrame) -> pd.DataFrame:
     return products
 
 
-def compute_all_pricing(df: pd.DataFrame, sentiment_df: pd.DataFrame) -> dict:
+def compute_all_pricing(
+    df: pd.DataFrame,
+    sentiment_df: pd.DataFrame,
+    aspect_df: pd.DataFrame | None = None,
+) -> dict:
     """
     Run all pricing analyses and return dict of DataFrames.
     """
     pricing_summary = brand_pricing_summary(df)
-    value_df = compute_value_score(pricing_summary, sentiment_df)
+    value_df = compute_value_score(pricing_summary, sentiment_df, aspect_df)
     disc_df = discount_dependency_score(pricing_summary)
     corr = rating_price_correlation(df)
     product_df = product_pricing_detail(df)

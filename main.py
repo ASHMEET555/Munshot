@@ -58,7 +58,7 @@ def run_analysis():
     df = analyze_reviews(df)
     sentiment_df = brand_sentiment_summary(df)
     aspect_df = brand_aspect_sentiment(df)
-    pricing = compute_all_pricing(df, sentiment_df)
+    pricing = compute_all_pricing(df, sentiment_df, aspect_df)
     matrix = build_comparison_matrix(pricing["brand_pricing"], sentiment_df, aspect_df)
 
     print("\n── Brand Sentiment Summary ──")

@@ -103,7 +103,10 @@ def brand_scorecard(matrix: pd.DataFrame) -> pd.DataFrame:
             col_min = df[col].min()
             col_max = df[col].max()
             val = row[col] if col in row else 50
-            if col_max == col_min:
+            # value_score_pct is already a 0-100 percentile score from pricing analysis.
+            if label == "value":
+                norm = float(val)
+            elif col_max == col_min:
                 norm = 50
             else:
                 norm = (val - col_min) / (col_max - col_min) * 100

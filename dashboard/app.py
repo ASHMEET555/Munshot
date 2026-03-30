@@ -77,7 +77,7 @@ def _get_analysis_cache():
     aspect_df = brand_aspect_sentiment(df)
 
     # Pricing
-    pricing = compute_all_pricing(df, sentiment_df)
+    pricing = compute_all_pricing(df, sentiment_df, aspect_df)
     pricing_summary = pricing["brand_pricing"]
 
     # Merge into comparison matrix
