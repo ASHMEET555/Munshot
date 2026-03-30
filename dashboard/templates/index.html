@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luggage Intelligence — Competitive Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ── NAV ───────────────────────────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="nav-logo">✈</span>
+    <span class="nav-title">LuggageIQ</span>
+    <span class="nav-sub">Competitive Intelligence</span>
+  </div>
+  <div class="nav-links">
+    <a href="/" class="nav-link active">Overview</a>
+    <a href="#brand-compare" class="nav-link">Compare</a>
+    <a href="#insights" class="nav-link">Insights</a>
+    <a href="#charts" class="nav-link">Charts</a>
+  </div>
+  <div class="nav-badge">Amazon India · 2024</div>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────────────────────── -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Competitive Intelligence Report</div>
+    <h1 class="hero-title">India's Luggage<br><span class="hero-accent">Market Decoded</span></h1>
+    <p class="hero-sub">Scrape → Analyze → Compare → Present · Powered by customer voice data</p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-pill">
+      <span class="stat-num">{{ overview.total_brands }}</span>
+      <span class="stat-lbl">Brands</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-num">{{ overview.total_products }}</span>
+      <span class="stat-lbl">Products</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-num">{{ overview.total_reviews | int | string | replace("000", "K") }}</span>
+      <span class="stat-lbl">Reviews</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-num">{{ (overview.avg_sentiment * 100) | int }}%</span>
+      <span class="stat-lbl">Avg Sentiment</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── FILTERS ────────────────────────────────────────────────────────────── -->
+<section class="filter-bar" id="filters">
+  <div class="filter-group">
+    <label class="filter-label">BRANDS</label>
+    <div class="brand-pills" id="brand-filter">
+      <button class="brand-pill active" data-brand="all">All</button>
+      {% for brand in brands %}
+      <button class="brand-pill" data-brand="{{ brand }}">{{ brand }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">PRICE RANGE</label>
+    <div class="range-inputs">
+      <input type="number" id="min-price" placeholder="₹ Min" class="range-input" value="0">
+      <span class="range-sep">—</span>
+      <input type="number" id="max-price" placeholder="₹ Max" class="range-input" value="20000">
+    </div>
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">MIN RATING</label>
+    <select id="rating-filter" class="filter-select">
+      <option value="0">Any</option>
+      <option value="3">3★+</option>
+      <option value="4">4★+</option>
+      <option value="4.5">4.5★+</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">CATEGORY</label>
+    <select id="cat-filter" class="filter-select">
+      <option value="">All Types</option>
+      <option value="cabin">Cabin</option>
+      <option value="medium">Check-In</option>
+      <option value="large">Large</option>
+      <option value="set">Travel Set</option>
+    </select>
+  </div>
+  <button class="filter-apply" id="apply-filters">Apply Filters</button>
+  <button class="filter-reset" id="reset-filters">Reset</button>
+</section>
+
+<!-- ── KPI CARDS ─────────────────────────────────────────────────────────── -->
+<section class="kpi-grid" id="kpi">
+  <div class="kpi-card">
+    <div class="kpi-icon">💰</div>
+    <div class="kpi-value">₹{{ "{:,.0f}".format(overview.avg_price) }}</div>
+    <div class="kpi-label">Avg. Selling Price</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">🏷️</div>
+    <div class="kpi-value">{{ overview.avg_discount | int }}%</div>
+    <div class="kpi-label">Avg. Discount</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">⭐</div>
+    <div class="kpi-value">{{ "%.2f" | format(overview.avg_rating) }}</div>
+    <div class="kpi-label">Avg. Star Rating</div>
+  </div>
+  <div class="kpi-card highlight">
+    <div class="kpi-icon">🧠</div>
+    <div class="kpi-value">{{ (overview.avg_sentiment * 100) | int }}%</div>
+    <div class="kpi-label">Avg. Sentiment Score</div>
+  </div>
+  {% if winners %}
+  <div class="kpi-card accent">
+    <div class="kpi-icon">🏆</div>
+    <div class="kpi-value small">{{ winners.get('best_value', '—') }}</div>
+    <div class="kpi-label">Best Value Brand</div>
+  </div>
+  <div class="kpi-card warn">
+    <div class="kpi-icon">💔</div>
+    <div class="kpi-value small">{{ winners.get('worst_value', '—') }}</div>
+    <div class="kpi-label">Worst Value Brand</div>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ── BRAND COMPARISON TABLE ─────────────────────────────────────────────── -->
+<section class="section" id="brand-compare">
+  <div class="section-header">
+    <h2 class="section-title">Brand Comparison Matrix</h2>
+    <span class="section-sub">Click a brand row to drill down</span>
+  </div>
+  <div class="table-wrapper">
+    <table class="comparison-table" id="comparison-table">
+      <thead>
+        <tr>
+          <th>Brand</th>
+          <th>Tier</th>
+          <th>Avg Price ↕</th>
+          <th>Avg Discount ↕</th>
+          <th>Avg Rating ↕</th>
+          <th>Reviews ↕</th>
+          <th>Sentiment ↕</th>
+          <th>Value Score ↕</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="comparison-tbody">
+        <tr><td colspan="9" class="loading-cell">Loading brand data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── CHARTS GRID ────────────────────────────────────────────────────────── -->
+<section class="section" id="charts">
+  <div class="section-header">
+    <h2 class="section-title">Visual Intelligence</h2>
+    <span class="section-sub">Interactive charts — hover for details</span>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card span-2" id="chart-price-rating">
+      <div class="chart-label">Price vs Rating · Scatter</div>
+      <div class="chart-inner" id="plot-price-rating"></div>
+    </div>
+
+    <div class="chart-card" id="chart-brand-price">
+      <div class="chart-label">Average Price by Brand</div>
+      <div class="chart-inner" id="plot-brand-price"></div>
+    </div>
+
+    <div class="chart-card" id="chart-discount">
+      <div class="chart-label">Discount Dependency</div>
+      <div class="chart-inner" id="plot-discount"></div>
+    </div>
+
+    <div class="chart-card span-2" id="chart-sentiment">
+      <div class="chart-label">Sentiment Distribution</div>
+      <div class="chart-inner" id="plot-sentiment"></div>
+    </div>
+
+    <div class="chart-card" id="chart-reviews">
+      <div class="chart-label">Review Volume</div>
+      <div class="chart-inner" id="plot-reviews"></div>
+    </div>
+
+    <div class="chart-card" id="chart-value">
+      <div class="chart-label">Value-for-Money Score</div>
+      <div class="chart-inner" id="plot-value"></div>
+    </div>
+
+    <div class="chart-card span-2" id="chart-aspect">
+      <div class="chart-label">Aspect Sentiment · Wheels · Handle · Material · Zipper · Size · Durability</div>
+      <div class="chart-inner" id="plot-aspect"></div>
+    </div>
+
+    <div class="chart-card span-2" id="chart-box">
+      <div class="chart-label">Price Distribution · Box Plot</div>
+      <div class="chart-inner" id="plot-box"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── AGENT INSIGHTS ─────────────────────────────────────────────────────── -->
+<section class="section" id="insights">
+  <div class="section-header">
+    <h2 class="section-title">Agent Insights</h2>
+    <span class="section-sub">Non-obvious conclusions generated automatically from the data</span>
+  </div>
+  <div class="insights-grid" id="insights-grid">
+    {% for ins in insights %}
+    <div class="insight-card severity-{{ ins.severity }}">
+      <div class="insight-top">
+        <span class="insight-icon">{{ ins.icon }}</span>
+        <span class="insight-cat">{{ ins.category | upper }}</span>
+        <span class="insight-badge severity-{{ ins.severity }}">{{ ins.severity }}</span>
+      </div>
+      <h3 class="insight-title">{{ ins.title }}</h3>
+      <p class="insight-detail">{{ ins.detail }}</p>
+      <div class="insight-rec">
+        <span class="rec-label">→ Action</span>
+        <span>{{ ins.recommendation }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ── PRODUCT EXPLORER ───────────────────────────────────────────────────── -->
+<section class="section" id="products">
+  <div class="section-header">
+    <h2 class="section-title">Product Explorer</h2>
+    <span class="section-sub" id="product-count"></span>
+  </div>
+  <div class="product-grid" id="product-grid">
+    <div class="loading-cell">Apply filters above to explore products...</div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-brand">LuggageIQ — Competitive Intelligence Dashboard</div>
+  <div class="footer-meta">Data sourced from Amazon India · Sentiment powered by VADER · Built for Moonshot AI Agent Internship</div>
+</footer>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

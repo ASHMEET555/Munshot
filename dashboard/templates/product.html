@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ product.product_title }} — Product Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <a href="/brand/{{ product.brand }}" class="nav-back">← {{ product.brand }}</a>
+    <span class="nav-title">LuggageIQ</span>
+  </div>
+</nav>
+
+<!-- ── PRODUCT HERO ───────────────────────────────────────────────────────── -->
+<header class="product-hero">
+  <div class="product-hero-inner">
+    <div class="product-crumb">
+      <a href="/">Home</a> / <a href="/brand/{{ product.brand }}">{{ product.brand }}</a> / Detail
+    </div>
+    <h1 class="product-title">{{ product.product_title }}</h1>
+    <div class="product-meta-row">
+      <span class="cat-badge">{{ product.get('category', 'luggage') }}</span>
+      <span class="rating-badge">{{ "%.1f" | format(product.rating) }}★</span>
+      <span class="review-count">{{ "{:,}".format(product.review_count | int) }} reviews</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── PRICING CARD ───────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="pricing-grid">
+    <div class="price-main-card">
+      <div class="price-tag">Current Price</div>
+      <div class="price-big">₹{{ "{:,.0f}".format(product.price) }}</div>
+      <div class="price-was">MRP: <s>₹{{ "{:,.0f}".format(product.list_price) }}</s></div>
+      <div class="price-savings">You save ₹{{ "{:,.0f}".format(product.list_price - product.price) }} ({{ product.discount | int }}%)</div>
+    </div>
+    <div class="product-stats-grid">
+      <div class="pstat">
+        <span class="pstat-val">{{ "%.1f" | format(product.rating) }}</span>
+        <span class="pstat-lbl">Star Rating</span>
+        <div class="star-row">
+          {% for i in range(5) %}
+          <span class="star {% if i < product.rating | int %}filled{% elif i < product.rating %}half{% endif %}">★</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="pstat">
+        <span class="pstat-val">{{ "{:,}".format(product.review_count | int) }}</span>
+        <span class="pstat-lbl">Reviews</span>
+      </div>
+      <div class="pstat">
+        <span class="pstat-val">{{ product.discount | int }}%</span>
+        <span class="pstat-lbl">Discount</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REVIEW SYNTHESIS ───────────────────────────────────────────────────── -->
+<section class="section two-col">
+  <div class="praise-card">
+    <h3>🌟 What Customers Love</h3>
+    {% for theme in themes.get('positive_themes', []) %}
+    <div class="theme-chip positive">{{ theme }}</div>
+    {% endfor %}
+    {% for praise in themes.get('recurring_praise', []) %}
+    <div class="theme-chip positive">{{ praise }}</div>
+    {% endfor %}
+    {% if not themes.get('positive_themes') and not themes.get('recurring_praise') %}
+    <p class="muted">No strong positive themes detected.</p>
+    {% endif %}
+  </div>
+  <div class="complaint-card">
+    <h3>⚠️ Common Complaints</h3>
+    {% for theme in themes.get('negative_themes', []) %}
+    <div class="theme-chip negative">{{ theme }}</div>
+    {% endfor %}
+    {% for complaint in themes.get('recurring_complaints', []) %}
+    <div class="theme-chip negative">{{ complaint }}</div>
+    {% endfor %}
+    {% if not themes.get('negative_themes') and not themes.get('recurring_complaints') %}
+    <p class="muted">No strong negative themes detected.</p>
+    {% endif %}
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-brand">LuggageIQ · {{ product.product_title }}</div>
+</footer>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

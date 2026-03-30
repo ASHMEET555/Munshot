@@ -499,12 +499,22 @@ def chart_radar(brand_name: str):
     values.append(values[0])  # Close the radar
     categories.append(categories[0])
 
+    line_color = get_brand_color(brand_name)
+    # Plotly expects rgba(...) for alpha, not 8-digit hex like #RRGGBBAA.
+    if isinstance(line_color, str) and line_color.startswith("#") and len(line_color) == 7:
+        r = int(line_color[1:3], 16)
+        g = int(line_color[3:5], 16)
+        b = int(line_color[5:7], 16)
+        fill_color = f"rgba({r},{g},{b},0.27)"
+    else:
+        fill_color = "rgba(149,165,166,0.27)"
+
     fig = go.Figure(go.Scatterpolar(
         r=values,
         theta=categories,
         fill="toself",
-        fillcolor=f"{get_brand_color(brand_name)}44",
-        line_color=get_brand_color(brand_name),
+        fillcolor=fill_color,
+        line_color=line_color,
         name=brand_name,
     ))
     fig.update_layout(

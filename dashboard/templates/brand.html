@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ brand }} — Brand Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <a href="/" class="nav-back">← Back</a>
+    <span class="nav-title">LuggageIQ</span>
+  </div>
+  <div class="nav-links">
+    {% for b in all_brands %}
+    <a href="/brand/{{ b }}" class="nav-link {% if b == brand %}active{% endif %}">{{ b }}</a>
+    {% endfor %}
+  </div>
+</nav>
+
+<!-- ── BRAND HERO ─────────────────────────────────────────────────────────── -->
+<header class="brand-hero" style="--brand-color: {{ '#FF6B35' if brand == 'Safari' else '#4ECDC4' if brand == 'Skybags' else '#1A1A2E' if brand == 'American Tourister' else '#E74C3C' if brand == 'VIP' else '#8E44AD' if brand == 'Aristocrat' else '#27AE60' }};">
+  <div class="brand-hero-bg"></div>
+  <div class="brand-hero-content">
+    <div class="brand-tag">Brand Intelligence Report</div>
+    <h1 class="brand-hero-title">{{ brand }}</h1>
+    <div class="brand-tier-badge">{{ brand_data.get('price_band', 'Mid-Range') }} · {{ brand_data.get('total_products', 0) | int }} Products</div>
+  </div>
+  <div class="brand-kpis">
+    <div class="bkpi">
+      <span class="bkpi-val">₹{{ "{:,.0f}".format(brand_data.get('avg_price', 0)) }}</span>
+      <span class="bkpi-lbl">Avg Price</span>
+    </div>
+    <div class="bkpi">
+      <span class="bkpi-val">{{ brand_data.get('avg_discount', 0) | int }}%</span>
+      <span class="bkpi-lbl">Avg Discount</span>
+    </div>
+    <div class="bkpi">
+      <span class="bkpi-val">{{ "%.1f" | format(brand_data.get('avg_rating', 0)) }}★</span>
+      <span class="bkpi-lbl">Avg Rating</span>
+    </div>
+    <div class="bkpi">
+      <span class="bkpi-val">{{ (brand_data.get('avg_sentiment', 0) * 100) | int }}%</span>
+      <span class="bkpi-lbl">Sentiment</span>
+    </div>
+    <div class="bkpi">
+      <span class="bkpi-val">{{ "{:,}".format(brand_data.get('total_review_count', 0) | int) }}</span>
+      <span class="bkpi-lbl">Total Reviews</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── PROS & CONS ────────────────────────────────────────────────────────── -->
+<section class="section two-col">
+  <div class="pros-card">
+    <h3 class="pros-title">✅ What Customers Praise</h3>
+    <ul class="theme-list">
+      {% for pro in pros_cons.pros %}
+      <li class="theme-item positive">{{ pro }}</li>
+      {% endfor %}
+      {% for theme in themes.get('positive_themes', []) %}
+      <li class="theme-item positive">Customers mention: <strong>{{ theme }}</strong></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="cons-card">
+    <h3 class="cons-title">❌ Recurring Complaints</h3>
+    <ul class="theme-list">
+      {% for con in pros_cons.cons %}
+      <li class="theme-item negative">{{ con }}</li>
+      {% endfor %}
+      {% for theme in themes.get('negative_themes', []) %}
+      <li class="theme-item negative">Customers mention: <strong>{{ theme }}</strong></li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<!-- ── BRAND CHARTS ───────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">{{ brand }} — Performance Analysis</h2>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card" id="chart-radar">
+      <div class="chart-label">Brand Scorecard · Radar</div>
+      <div class="chart-inner" id="plot-radar"></div>
+    </div>
+    <div class="chart-card" id="chart-aspect-brand">
+      <div class="chart-label">Aspect Sentiment</div>
+      <div class="chart-inner" id="plot-aspect-brand"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRODUCT TABLE ──────────────────────────────────────────────────────── -->
+<section class="section" id="product-section">
+  <div class="section-header">
+    <h2 class="section-title">{{ brand }} Products</h2>
+  </div>
+  <div class="table-wrapper">
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>List Price</th>
+          <th>Discount</th>
+          <th>Rating</th>
+          <th>Reviews</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td class="product-name">{{ p.product_title }}</td>
+          <td><span class="cat-badge">{{ p.category }}</span></td>
+          <td class="price-cell">₹{{ "{:,.0f}".format(p.price) }}</td>
+          <td class="list-price-cell">₹{{ "{:,.0f}".format(p.list_price) }}</td>
+          <td><span class="discount-badge">{{ p.discount | int }}% off</span></td>
+          <td class="rating-cell">{{ "%.1f" | format(p.rating) }}★</td>
+          <td>{{ "{:,}".format(p.review_count | int) }}</td>
+          <td>
+            <a href="/product/{{ p.product_title | replace(' ', '_') }}" class="detail-btn">View →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-brand">LuggageIQ — {{ brand }} Intelligence Report</div>
+</footer>
+
+<script>
+const BRAND = "{{ brand }}";
+</script>
+<script src="/static/script.js"></script>
+<script>
+// Load brand-specific charts
+window.addEventListener('DOMContentLoaded', () => {
+  fetchAndRender('/api/chart/radar/' + encodeURIComponent(BRAND), 'plot-radar');
+  fetchAndRender('/api/chart/aspect_sentiment?brand=' + BRAND, 'plot-aspect-brand');
+});
+</script>
+</body>
+</html>
