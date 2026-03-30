@@ -20,6 +20,7 @@ import json
 import hashlib
 from pathlib import Path
 from functools import lru_cache
+from urllib.parse import unquote
 
 import pandas as pd
 import numpy as np
@@ -123,6 +124,16 @@ def get_data():
     return _get_analysis_cache()
 
 
+def _resolve_brand_name(requested_name: str, available_brands) -> str | None:
+    """Resolve brand names from URL-safe text (e.g., %20, +) to canonical brand labels."""
+    if requested_name is None:
+        return None
+
+    normalized = unquote(str(requested_name)).replace("+", " ").strip().lower()
+    brand_lookup = {str(b).strip().lower(): b for b in available_brands}
+    return brand_lookup.get(normalized)
+
+
 # ── Helper: safe JSON response ─────────────────────────────────────────────────
 
 def safe_jsonify(data):
@@ -163,20 +174,21 @@ def brand_page(brand_name: str):
     df = d["df"]
     brands = df["brand"].unique()
 
-    if brand_name not in brands:
+    resolved_brand = _resolve_brand_name(brand_name, brands)
+    if resolved_brand is None:
         abort(404)
 
-    brand_df = df[df["brand"] == brand_name]
+    brand_df = df[df["brand"] == resolved_brand]
     matrix = d["matrix"]
-    brand_row = matrix[matrix["brand"] == brand_name].iloc[0].to_dict()
-    themes = d["themes"].get(brand_name, {})
-    pros_cons = get_brand_pros_cons(matrix, brand_name, d["themes"])
+    brand_row = matrix[matrix["brand"] == resolved_brand].iloc[0].to_dict()
+    themes = d["themes"].get(resolved_brand, {})
+    pros_cons = get_brand_pros_cons(matrix, resolved_brand, d["themes"])
     products = brand_df.drop_duplicates("product_title")[
         ["product_title", "price", "list_price", "discount", "rating", "review_count", "category"]
     ].to_dict("records")
 
     return render_template("brand.html",
-                           brand=brand_name,
+                           brand=resolved_brand,
                            brand_data=brand_row,
                            themes=themes,
                            pros_cons=pros_cons,
@@ -246,9 +258,13 @@ def api_brands():
 def api_brand_detail(brand_name: str):
     d = get_data()
     matrix = d["matrix"]
-    themes = d["themes"].get(brand_name, {})
-    pros_cons = get_brand_pros_cons(matrix, brand_name, d["themes"])
-    row = matrix[matrix["brand"] == brand_name]
+    resolved_brand = _resolve_brand_name(brand_name, matrix["brand"].unique())
+    if resolved_brand is None:
+        return safe_jsonify({"error": "Brand not found"}), 404
+
+    themes = d["themes"].get(resolved_brand, {})
+    pros_cons = get_brand_pros_cons(matrix, resolved_brand, d["themes"])
+    row = matrix[matrix["brand"] == resolved_brand]
     if row.empty:
         return safe_jsonify({"error": "Brand not found"}), 404
     data = row.iloc[0].to_dict()
@@ -489,7 +505,11 @@ def chart_radar(brand_name: str):
     """Radar chart for a single brand's scorecard."""
     d = get_data()
     scorecard = d["scorecard"]
-    row = scorecard[scorecard["brand"] == brand_name]
+    resolved_brand = _resolve_brand_name(brand_name, scorecard["brand"].unique())
+    if resolved_brand is None:
+        return safe_jsonify({"error": "Brand not found"}), 404
+
+    row = scorecard[scorecard["brand"] == resolved_brand]
     if row.empty:
         return safe_jsonify({"error": "Brand not found"}), 404
 
@@ -499,7 +519,7 @@ def chart_radar(brand_name: str):
     values.append(values[0])  # Close the radar
     categories.append(categories[0])
 
-    line_color = get_brand_color(brand_name)
+    line_color = get_brand_color(resolved_brand)
     # Plotly expects rgba(...) for alpha, not 8-digit hex like #RRGGBBAA.
     if isinstance(line_color, str) and line_color.startswith("#") and len(line_color) == 7:
         r = int(line_color[1:3], 16)
@@ -515,11 +535,11 @@ def chart_radar(brand_name: str):
         fill="toself",
         fillcolor=fill_color,
         line_color=line_color,
-        name=brand_name,
+        name=resolved_brand,
     ))
     fig.update_layout(
         polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-        title=f"{brand_name} — Brand Scorecard",
+        title=f"{resolved_brand} — Brand Scorecard",
     )
     apply_plotly_theme(fig)
     return safe_jsonify(json.loads(fig.to_json()))
