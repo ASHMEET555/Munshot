@@ -1,4 +1,4 @@
-# LuggageIQ - Competitive Intelligence Dashboard
+# LuggageIQ - Competitive Intelligence Dashboard 🧳📊
 
 An end-to-end data intelligence project for Amazon India luggage brands.
 
@@ -12,14 +12,14 @@ This project covers:
 
 ---
 
-## Demo Links
+## Demo Links 🔗
 
 - Live demo: Add your deployed URL here
 - Repository: Add your GitHub repository URL here
 
 ---
 
-## Key Features
+## Key Features ✨
 
 - Multi-brand comparison across price, rating, sentiment, and value
 - Aspect-level quality analysis (wheels, handle, material, zipper, size, durability)
@@ -29,42 +29,42 @@ This project covers:
 
 ---
 
-## Project Architecture
+## Project Architecture 🏗️
 
 ```mermaid
 flowchart TD
-	A[Data Source Layer] --> A1[Synthetic Generator]
-	A --> A2[Amazon Scraper Optional]
+    A[Data Source Layer] --> A1[Synthetic Generator]
+    A --> A2[Amazon Scraper Optional]
 
-	A1 --> B[Raw Dataset CSV]
-	A2 --> B
+    A1 --> B[Raw Dataset CSV]
+    A2 --> B
 
-	B --> C[Analysis Pipeline]
-	C --> C1[Sentiment Analysis]
-	C --> C2[Pricing Analysis]
-	C --> C3[Competitor Matrix]
-	C --> C4[Insight Generator]
+    B --> C[Analysis Pipeline]
+    C --> C1[Sentiment Analysis]
+    C --> C2[Pricing Analysis]
+    C --> C3[Competitor Matrix]
+    C --> C4[Insight Generator]
 
-	C1 --> D[Processed Metrics]
-	C2 --> D
-	C3 --> D
-	C4 --> D
+    C1 --> D[Processed Metrics]
+    C2 --> D
+    C3 --> D
+    C4 --> D
 
-	D --> E[Flask API Layer]
-	E --> E1[/api/overview]
-	E --> E2[/api/brands]
-	E --> E3[/api/chart/*]
-	E --> E4[/api/insights]
+    D --> E[Flask API Layer]
+    E --> E1["/api/overview"]
+    E --> E2["/api/brands"]
+    E --> E3["/api/chart/*"]
+    E --> E4["/api/insights"]
 
-	E --> F[Dashboard UI]
-	F --> F1[Overview]
-	F --> F2[Brand Drilldown]
-	F --> F3[Product Drilldown]
+    E --> F[Dashboard UI]
+    F --> F1[Overview]
+    F --> F2[Brand Drilldown]
+    F --> F3[Product Drilldown]
 ```
 
 ---
 
-## Folder Structure
+## Folder Structure 📁
 
 ```text
 .
@@ -94,19 +94,19 @@ flowchart TD
 
 ---
 
-## End-to-End Pipeline (Short)
+## End-to-End Pipeline (Short) 🔄
 
-1. Data is generated or scraped into raw CSV.
-2. Sentiment and aspect signals are computed.
-3. Pricing, discount, and value metrics are derived.
-4. Brand comparison matrix and scorecards are built.
-5. Insight engine generates decision-ready summaries.
-6. Flask serves chart APIs and HTML pages.
-7. Dashboard renders interactive views for analysis.
+1. 🧱 Data is generated or scraped into raw CSV.
+2. 🧠 Sentiment and aspect signals are computed.
+3. 💸 Pricing, discount, and value metrics are derived.
+4. 🏁 Brand comparison matrix and scorecards are built.
+5. 💡 Insight engine generates decision-ready summaries.
+6. 🌐 Flask serves chart APIs and HTML pages.
+7. 📈 Dashboard renders interactive views for analysis.
 
 ---
 
-## Core Formulas Used
+## Core Formulas Used 🧮
 
 ### 1) Sentiment Label Mapping
 
@@ -156,22 +156,22 @@ $$
 
 ---
 
-## Local Setup and Run
+## Local Setup and Run 💻
 
-### Prerequisites
+### Prerequisites ✅
 
 - Python 3.10+
 - pip
 - optional: Playwright + Chromium for scraping
 
-### 1) Clone and enter project
+### 1) Clone and enter project 📦
 
 ```bash
 git clone <your-repo-url>
 cd Munshot
 ```
 
-### 2) Create and activate virtual environment
+### 2) Create and activate virtual environment 🐍
 
 Windows PowerShell:
 
@@ -180,25 +180,25 @@ python -m venv .venv
 & ".venv\Scripts\Activate.ps1"
 ```
 
-### 3) Install dependencies
+### 3) Install dependencies 📥
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-### 4) Generate dataset
+### 4) Generate dataset 🧪
 
 ```powershell
 python main.py --generate
 ```
 
-### 5) Run analysis pipeline in terminal
+### 5) Run analysis pipeline in terminal 🔍
 
 ```powershell
 python main.py --analyze
 ```
 
-### 6) Start dashboard on localhost
+### 6) Start dashboard on localhost 🚀
 
 ```powershell
 python main.py
@@ -210,7 +210,7 @@ Open:
 
 ---
 
-## Optional Scraping Mode
+## Optional Scraping Mode 🕸️
 
 Install scraping dependencies:
 
@@ -229,7 +229,7 @@ If scraping is blocked by Amazon, the project falls back to synthetic data.
 
 ---
 
-## API Endpoints
+## API Endpoints 🧭
 
 - GET /api/overview
 - GET /api/brands
@@ -248,7 +248,7 @@ If scraping is blocked by Amazon, the project falls back to synthetic data.
 
 ---
 
-## Deployment Notes
+## Deployment Notes ☁️
 
 - You can deploy on Render, Railway, Fly.io, or any VPS.
 - For production, use gunicorn instead of Flask development server.
@@ -261,7 +261,7 @@ gunicorn dashboard.app:app --bind 0.0.0.0:5000 --workers 2
 
 ---
 
-## Troubleshooting
+## Troubleshooting 🛠️
 
 ### Charts not rendering
 
@@ -281,7 +281,7 @@ pip install --upgrade nbformat ipykernel statsmodels
 
 ---
 
-## Assignment Highlights
+## Assignment Highlights 🎯
 
 - Problem: compare market brands with review-driven intelligence
 - Approach: analysis pipeline + scoring + visual storytelling
@@ -289,7 +289,7 @@ pip install --upgrade nbformat ipykernel statsmodels
 
 ---
 
-## Tech Stack
+## Tech Stack 🧰
 
 - Python
 - Flask
@@ -300,22 +300,22 @@ pip install --upgrade nbformat ipykernel statsmodels
 
 ---
 
-## Author
+## Author 👤
 
-- Name: Add your name
+- Name: Ashmeet Singh Sandhu
 - Role: Moonshot AI Agent Intern Assignment Submission
 
 ---
 
-## Quick Demo Script
+## Quick Demo Script 🎬
 
 Use this sequence during your demo:
 
-1. Run dataset generation command
-2. Run analysis command and show terminal summary
-3. Launch dashboard
-4. Show overview, brand drilldown, product drilldown
-5. Show API endpoints in browser
-6. Share deployed link
+1. ▶️ Run dataset generation command
+2. ▶️ Run analysis command and show terminal summary
+3. ▶️ Launch dashboard
+4. ▶️ Show overview, brand drilldown, product drilldown
+5. ▶️ Show API endpoints in browser
+6. ▶️ Share deployed link
 
-Good luck with your submission! 🚀
+Looking Forward to Contribute More ! 🚀
